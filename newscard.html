@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,7 +118,7 @@ button:hover{
 
 <h1>News Graphic Generator</h1>
 
-<!-- IMAGE CROP AREA -->
+<!-- IMAGE EDIT AREA -->
 
 <div id="canvasContainer">
   <canvas id="canvas" width="1200" height="720"></canvas>
@@ -214,7 +215,7 @@ const downloadNewsButton =
   document.getElementById("downloadNewsButton");
 
 /* =========================
-   BACKGROUND + LOGO
+   BG + LOGO
 ========================= */
 
 const backgroundImage = new Image();
@@ -404,22 +405,7 @@ function generateNewsCanvas(){
   );
 
   /* =========================
-     FULL BACKGROUND
-  ========================= */
-
-  if(backgroundImage.complete){
-
-    newsCtx.drawImage(
-      backgroundImage,
-      0,
-      0,
-      1080,
-      1350
-    );
-  }
-
-  /* =========================
-     IMAGE AREA
+     MAIN IMAGE AREA
   ========================= */
 
   const imageHeight = 945;
@@ -433,7 +419,22 @@ function generateNewsCanvas(){
   );
 
   /* =========================
-     TEXT
+     BG AREA (BOTTOM 30%)
+  ========================= */
+
+  if(backgroundImage.complete){
+
+    newsCtx.drawImage(
+      backgroundImage,
+      0,
+      945,
+      1080,
+      405
+    );
+  }
+
+  /* =========================
+     WHITE TEXT
   ========================= */
 
   drawWrappedText(
@@ -664,3 +665,4 @@ downloadNewsButton.addEventListener(
 
 </body>
 </html>
+```
