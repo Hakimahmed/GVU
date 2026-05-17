@@ -3,106 +3,90 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>News Graphic Generator</title>
+<title>News Generator</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
 
 <style>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
   body {
+    font-family: Arial;
     background: #f4f6f8;
     text-align: center;
     padding: 20px;
-    font-family: Arial;
   }
 
   h1 {
     color: #006163;
-    margin-bottom: 15px;
-  }
-
-  #newsCanvasContainer {
-    width: 1080px;
-    height: 1350px;
-    margin: auto;
-    border: 1px solid #ccc;
-    background: #fff;
-    position: relative;
-  }
-
-  canvas {
-    display: block;
-  }
-
-  input, select, button {
-    padding: 10px;
-    margin: 6px;
-    font-size: 16px;
   }
 
   #headlineInput {
     width: 80%;
+    padding: 10px;
+    font-size: 18px;
     font-family: Montserrat;
     font-weight: 700;
+    margin: 10px 0;
+  }
+
+  button {
+    padding: 10px 15px;
+    margin: 5px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  #canvasContainer {
+    width: 1080px;
+    height: 1350px;
+    margin: auto;
+    background: #fff;
+    border: 1px solid #ccc;
+  }
+
+  canvas {
+    display: block;
   }
 </style>
 </head>
 
 <body>
 
-<h1>News Graphic Generator</h1>
-
-<select id="templateSelect">
-  <option value="classic">Classic</option>
-  <option value="breaking">Breaking News</option>
-  <option value="minimal">Minimal</option>
-  <option value="dark">Dark</option>
-</select>
-
-<br>
+<h1>News Generator</h1>
 
 <input id="headlineInput" placeholder="Enter headline (English only)" />
-
 <br>
 
-<button id="generateButton">Generate</button>
-<button id="downloadButton">Download</button>
+<button id="generateBtn">Generate</button>
+<button id="downloadBtn">Download</button>
 
-<div id="newsCanvasContainer">
-  <canvas id="newsCanvas" width="1080" height="1350"></canvas>
+<div id="canvasContainer">
+  <canvas id="canvas" width="1080" height="1350"></canvas>
 </div>
 
 <script>
-const canvas = document.getElementById("newsCanvas");
+const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 const headlineInput = document.getElementById("headlineInput");
-const templateSelect = document.getElementById("templateSelect");
 
-const backgroundImage = new Image();
-backgroundImage.src = "BG.png";
+const bg = new Image();
+bg.src = "BG.png";
 
-const logoImage = new Image();
-logoImage.src = "GVU.png";
+const logo = new Image();
+logo.src = "GVU.png";
 
-// ==============================
-// TEXT WRAPPER
-// ==============================
-function drawText(ctx, text, x, y, maxWidth, size, color) {
+// ================= TEXT =================
+function drawText(text, x, y, maxWidth, size) {
   const words = text.split(" ");
   let line = [];
   let lines = [];
 
   ctx.font = `700 ${size}px Montserrat`;
-  ctx.fillStyle = color;
+  ctx.fillStyle = "#000";
 
   for (let word of words) {
     let test = line.join(" ") + (line.length ? " " : "") + word;
+
     if (ctx.measureText(test).width > maxWidth && line.length) {
       lines.push(line.join(" "));
       line = [word];
@@ -110,6 +94,7 @@ function drawText(ctx, text, x, y, maxWidth, size, color) {
       line.push(word);
     }
   }
+
   if (line.length) lines.push(line.join(" "));
 
   for (let i = 0; i < lines.length; i++) {
@@ -118,29 +103,23 @@ function drawText(ctx, text, x, y, maxWidth, size, color) {
   }
 }
 
-// ==============================
-// MAIN GENERATOR
-// ==============================
+// ================= GENERATE =================
 function generate() {
   const text = headlineInput.value.trim();
-  const template = templateSelect.value;
-
   if (!text) return;
 
   ctx.clearRect(0, 0, 1080, 1350);
 
-  // Background
-  ctx.drawImage(backgroundImage, 0, 0, 1080, 1350);
+  // background
+  ctx.drawImage(bg, 0, 0, 1080, 1350);
 
   const img = new Image();
 
   img.onload = function () {
 
-    // ==========================
-    // FIX: NO IMAGE STRETCH
-    // ==========================
+    // NO STRETCH FIT IMAGE
     const maxW = 1030;
-    const maxH = 700;
+    const maxH = 750;
 
     let ratio = Math.min(maxW / img.width, maxH / img.height);
 
@@ -152,59 +131,20 @@ function generate() {
 
     ctx.drawImage(img, x, y, w, h);
 
-    // ==========================
-    // TEMPLATE SETTINGS
-    // ==========================
-    let color = "#000";
-    let textY = 920;
-    let size = 70;
+    // headline
+    drawText(text, 540, 950, 900, 70);
 
-    if (template === "breaking") {
-      ctx.fillStyle = "red";
-      ctx.fillRect(0, 0, 1080, 120);
-      color = "#fff";
-      textY = 900;
-    }
-
-    if (template === "dark") {
-      ctx.fillStyle = "rgba(0,0,0,0.55)";
-      ctx.fillRect(0, 0, 1080, 1350);
-      color = "#fff";
-    }
-
-    if (template === "minimal") {
-      size = 64;
-      textY = 950;
-    }
-
-    // ==========================
-    // HEADLINE
-    // ==========================
-    drawText(ctx, text, 540, textY, 900, size, color);
-
-    // ==========================
-    // FIX: SAFE LOGO POSITION
-    // ==========================
-    const logoSize = 110;
-
-    ctx.drawImage(
-      logoImage,
-      1080 - logoSize - 40,
-      30,
-      logoSize,
-      logoSize
-    );
+    // logo (safe top-right)
+    ctx.drawImage(logo, 1080 - 150, 30, 110, 110);
   };
 
   img.src = canvas.toDataURL();
 }
 
-// ==============================
-// DOWNLOAD
-// ==============================
-document.getElementById("generateButton").onclick = generate;
+// ================= EVENTS =================
+document.getElementById("generateBtn").onclick = generate;
 
-document.getElementById("downloadButton").onclick = function () {
+document.getElementById("downloadBtn").onclick = function () {
   const a = document.createElement("a");
   a.download = "news.png";
   a.href = canvas.toDataURL();
