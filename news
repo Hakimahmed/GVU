@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>News Graphic Generator</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background: #f4f6f8;
+    text-align: center;
+    padding: 20px;
+    font-family: Arial;
+  }
+
+  h1 {
+    color: #006163;
+    margin-bottom: 15px;
+  }
+
+  #newsCanvasContainer {
+    width: 1080px;
+    height: 1350px;
+    margin: auto;
+    border: 1px solid #ccc;
+    background: #fff;
+    position: relative;
+  }
+
+  canvas {
+    display: block;
+  }
+
+  input, select, button {
+    padding: 10px;
+    margin: 6px;
+    font-size: 16px;
+  }
+
+  #headlineInput {
+    width: 80%;
+    font-family: Montserrat;
+    font-weight: 700;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>News Graphic Generator</h1>
+
+<select id="templateSelect">
+  <option value="classic">Classic</option>
+  <option value="breaking">Breaking News</option>
+  <option value="minimal">Minimal</option>
+  <option value="dark">Dark</option>
+</select>
+
+<br>
+
+<input id="headlineInput" placeholder="Enter headline (English only)" />
+
+<br>
+
+<button id="generateButton">Generate</button>
+<button id="downloadButton">Download</button>
+
+<div id="newsCanvasContainer">
+  <canvas id="newsCanvas" width="1080" height="1350"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById("newsCanvas");
+const ctx = canvas.getContext("2d");
+
+const headlineInput = document.getElementById("headlineInput");
+const templateSelect = document.getElementById("templateSelect");
+
+const backgroundImage = new Image();
+backgroundImage.src = "BG.png";
+
+const logoImage = new Image();
+logoImage.src = "GVU.png";
+
+// ==============================
+// TEXT WRAPPER
+// ==============================
+function drawText(ctx, text, x, y, maxWidth, size, color) {
+  const words = text.split(" ");
+  let line = [];
+  let lines = [];
+
+  ctx.font = `700 ${size}px Montserrat`;
+  ctx.fillStyle = color;
+
+  for (let word of words) {
+    let test = line.join(" ") + (line.length ? " " : "") + word;
+    if (ctx.measureText(test).width > maxWidth && line.length) {
+      lines.push(line.join(" "));
+      line = [word];
+    } else {
+      line.push(word);
+    }
+  }
+  if (line.length) lines.push(line.join(" "));
+
+  for (let i = 0; i < lines.length; i++) {
+    let w = ctx.measureText(lines[i]).width;
+    ctx.fillText(lines[i], x - w / 2, y + i * size * 1.2);
+  }
+}
+
+// ==============================
+// MAIN GENERATOR
+// ==============================
+function generate() {
+  const text = headlineInput.value.trim();
+  const template = templateSelect.value;
+
+  if (!text) return;
+
+  ctx.clearRect(0, 0, 1080, 1350);
+
+  // Background
+  ctx.drawImage(backgroundImage, 0, 0, 1080, 1350);
+
+  const img = new Image();
+
+  img.onload = function () {
+
+    // ==========================
+    // FIX: NO IMAGE STRETCH
+    // ==========================
+    const maxW = 1030;
+    const maxH = 700;
+
+    let ratio = Math.min(maxW / img.width, maxH / img.height);
+
+    let w = img.width * ratio;
+    let h = img.height * ratio;
+
+    let x = (1080 - w) / 2;
+    let y = 140 + (maxH - h) / 2;
+
+    ctx.drawImage(img, x, y, w, h);
+
+    // ==========================
+    // TEMPLATE SETTINGS
+    // ==========================
+    let color = "#000";
+    let textY = 920;
+    let size = 70;
+
+    if (template === "breaking") {
+      ctx.fillStyle = "red";
+      ctx.fillRect(0, 0, 1080, 120);
+      color = "#fff";
+      textY = 900;
+    }
+
+    if (template === "dark") {
+      ctx.fillStyle = "rgba(0,0,0,0.55)";
+      ctx.fillRect(0, 0, 1080, 1350);
+      color = "#fff";
+    }
+
+    if (template === "minimal") {
+      size = 64;
+      textY = 950;
+    }
+
+    // ==========================
+    // HEADLINE
+    // ==========================
+    drawText(ctx, text, 540, textY, 900, size, color);
+
+    // ==========================
+    // FIX: SAFE LOGO POSITION
+    // ==========================
+    const logoSize = 110;
+
+    ctx.drawImage(
+      logoImage,
+      1080 - logoSize - 40,
+      30,
+      logoSize,
+      logoSize
+    );
+  };
+
+  img.src = canvas.toDataURL();
+}
+
+// ==============================
+// DOWNLOAD
+// ==============================
+document.getElementById("generateButton").onclick = generate;
+
+document.getElementById("downloadButton").onclick = function () {
+  const a = document.createElement("a");
+  a.download = "news.png";
+  a.href = canvas.toDataURL();
+  a.click();
+};
+</script>
+
+</body>
+</html>
