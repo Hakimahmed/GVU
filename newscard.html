@@ -3,715 +3,187 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>News Graphic Generator</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
 
 <style>
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
-
-body{
-  background:#f1f3f6;
-  font-family:'Montserrat',sans-serif;
-  padding:20px;
-}
-
-/* =========================
-   MAIN CONTAINER
-========================= */
-
-.container{
-  width:100%;
-  max-width:1400px;
-  margin:auto;
-}
-
-h1{
-  text-align:center;
-  margin-bottom:20px;
-  color:#111;
-  font-size:28px;
-}
-
-/* =========================
-   RESPONSIVE PREVIEW SIZE
-========================= */
-
-.preview-wrapper{
-  width:100%;
-  display:flex;
-  justify-content:center;
-  margin-bottom:25px;
-}
-
-#canvasContainer{
-  width:900px;
-  height:540px;
-  background:#fff;
-  border-radius:12px;
-  overflow:hidden;
-  border:1px solid #ddd;
-  box-shadow:0 5px 15px rgba(0,0,0,0.08);
-}
-
-#newsCanvasContainer{
-  width:432px;
-  height:540px;
-  background:#fff;
-  border-radius:12px;
-  overflow:hidden;
-  border:1px solid #ddd;
-  box-shadow:0 5px 15px rgba(0,0,0,0.08);
-}
-
-/* REAL CANVAS SIZE */
-
-#canvas{
-  width:900px;
-  height:540px;
-}
-
-#newsCanvas{
-  width:432px;
-  height:540px;
-}
-
-canvas{
-  display:block;
-}
-
-/* =========================
-   BUTTONS
-========================= */
-
-.controls{
-  text-align:center;
-  margin-top:20px;
-}
-
-button{
-  padding:12px 22px;
-  margin:5px;
-  border:none;
-  border-radius:8px;
-  background:#111;
-  color:#fff;
-  font-size:15px;
-  cursor:pointer;
-}
-
-button:hover{
-  background:#333;
-}
-
-/* =========================
-   INPUT
-========================= */
-
-#headlineInput{
-  width:70%;
-  display:block;
-  margin:25px auto;
-  padding:16px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  font-size:28px;
-  font-family:'Montserrat',sans-serif;
-  font-weight:800;
-  text-align:center;
-}
-
-@media(max-width:1000px){
-
-  #canvasContainer{
-    width:100%;
-    height:auto;
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
   }
 
-  #canvas{
-    width:100%;
-    height:auto;
+  body {
+    background: #f4f6f8;
+    padding: 20px;
+    text-align: center;
   }
 
-  #newsCanvasContainer{
-    width:324px;
-    height:405px;
+  h1 {
+    margin-bottom: 20px;
+    color: #006163;
   }
 
-  #newsCanvas{
-    width:324px;
-    height:405px;
+  #newsCanvasContainer {
+    width: 1080px;
+    height: 1350px;
+    margin: auto;
+    background: #fff;
+    border: 1px solid #ccc;
+    position: relative;
   }
 
-}
+  canvas {
+    display: block;
+    margin: auto;
+  }
 
+  .controls {
+    margin: 15px 0;
+  }
+
+  button, select, input {
+    padding: 10px;
+    margin: 5px;
+    font-size: 16px;
+  }
+
+  #headlineInput {
+    width: 80%;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+  }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-
 <h1>News Graphic Generator</h1>
 
-<!-- IMAGE EDIT AREA -->
+<!-- Template -->
+<select id="templateSelect">
+  <option value="classic">Classic News</option>
+  <option value="breaking">Breaking News</option>
+  <option value="minimal">Minimal Clean</option>
+  <option value="dark">Dark Modern</option>
+</select>
 
-<div class="preview-wrapper">
-  <div id="canvasContainer">
-    <canvas id="canvas" width="1200" height="720"></canvas>
-  </div>
-</div>
+<br>
 
-<!-- CONTROLS -->
+<input type="text" id="headlineInput" placeholder="Enter headline (English only)" />
 
-<div class="controls">
+<br>
 
-  <button id="stretchButton">
-    Fit by Stretch
-  </button>
+<button id="generateButton">Generate News Graphic</button>
+<button id="downloadButton">Download Image</button>
 
-  <button id="fitLongestSideButton">
-    Fit Longest Side
-  </button>
-
-  <button id="centerButton">
-    Center Image
-  </button>
-
-</div>
-
-<!-- HEADLINE -->
-
-<input
-type="text"
-id="headlineInput"
-placeholder="Enter Headline"
-/>
-
-<!-- GENERATE -->
-
-<div class="controls">
-
-  <button id="generateButton">
-    Generate Graphic
-  </button>
-
-</div>
-
-<!-- OUTPUT -->
-
-<div class="preview-wrapper">
-  <div id="newsCanvasContainer">
-    <canvas id="newsCanvas" width="1080" height="1350"></canvas>
-  </div>
-</div>
-
-<!-- DOWNLOAD -->
-
-<div class="controls">
-
-  <button id="downloadNewsButton">
-    Download Final Image
-  </button>
-
-</div>
-
+<div id="newsCanvasContainer">
+  <canvas id="newsCanvas" width="1080" height="1350"></canvas>
 </div>
 
 <script>
+const newsCanvas = document.getElementById('newsCanvas');
+const newsCtx = newsCanvas.getContext('2d');
 
-/* =========================
-   ELEMENTS
-========================= */
+const headlineInput = document.getElementById('headlineInput');
+const templateSelect = document.getElementById('templateSelect');
 
-const canvas =
-  document.getElementById("canvas");
-
-const ctx =
-  canvas.getContext("2d");
-
-const newsCanvas =
-  document.getElementById("newsCanvas");
-
-const newsCtx =
-  newsCanvas.getContext("2d");
-
-const headlineInput =
-  document.getElementById("headlineInput");
-
-const generateButton =
-  document.getElementById("generateButton");
-
-const stretchButton =
-  document.getElementById("stretchButton");
-
-const fitLongestSideButton =
-  document.getElementById("fitLongestSideButton");
-
-const centerButton =
-  document.getElementById("centerButton");
-
-const downloadNewsButton =
-  document.getElementById("downloadNewsButton");
-
-/* =========================
-   BG + LOGO
-========================= */
+const generateButton = document.getElementById('generateButton');
+const downloadButton = document.getElementById('downloadButton');
 
 const backgroundImage = new Image();
-backgroundImage.src = "BG.jpg";
+backgroundImage.src = 'BG.png';
 
 const logoImage = new Image();
-logoImage.src = "GVU.png";
-
-/* =========================
-   IMAGE VARIABLES
-========================= */
-
-let image = null;
-
-let offsetX = 0;
-let offsetY = 0;
-
-let scale = 1;
-
-/* =========================
-   PASTE IMAGE
-========================= */
-
-document.addEventListener("paste",(event)=>{
-
-  const items =
-    event.clipboardData.items;
-
-  for(let item of items){
-
-    if(item.type.indexOf("image") !== -1){
-
-      const blob =
-        item.getAsFile();
-
-      const reader =
-        new FileReader();
-
-      reader.onload = (e)=>{
-
-        loadImage(e.target.result);
-      };
-
-      reader.readAsDataURL(blob);
-    }
-  }
-});
-
-/* =========================
-   LOAD IMAGE
-========================= */
-
-function loadImage(src){
-
-  image = new Image();
-
-  image.onload = ()=>{
-
-    fitByStretch();
-  };
-
-  image.src = src;
-}
-
-/* =========================
-   FIT IMAGE
-========================= */
-
-function fitByStretch(){
-
-  if(!image) return;
-
-  offsetX = 0;
-  offsetY = 0;
-
-  const canvasRatio =
-    canvas.width / canvas.height;
-
-  const imageRatio =
-    image.width / image.height;
-
-  if(imageRatio > canvasRatio){
-
-    scale =
-      canvas.height / image.height;
-
-    offsetX =
-      (canvas.width - image.width * scale) / 2;
-
-  }else{
-
-    scale =
-      canvas.width / image.width;
-
-    offsetY =
-      (canvas.height - image.height * scale) / 2;
-  }
-
-  drawImage();
-}
-
-function fitOnLongestSide(){
-
-  if(!image) return;
-
-  if(image.width > image.height){
-
-    scale =
-      canvas.width / image.width;
-
-  }else{
-
-    scale =
-      canvas.height / image.height;
-  }
-
-  offsetX =
-    (canvas.width - image.width * scale) / 2;
-
-  offsetY =
-    (canvas.height - image.height * scale) / 2;
-
-  drawImage();
-}
-
-function centerImage(){
-
-  if(!image) return;
-
-  offsetX =
-    (canvas.width - image.width * scale) / 2;
-
-  offsetY =
-    (canvas.height - image.height * scale) / 2;
-
-  drawImage();
-}
-
-/* =========================
-   DRAW IMAGE
-========================= */
-
-function drawImage(){
-
-  ctx.clearRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-
-  if(image){
-
-    ctx.drawImage(
-      image,
-      offsetX,
-      offsetY,
-      image.width * scale,
-      image.height * scale
-    );
-  }
-}
-
-/* =========================
-   GENERATE OUTPUT
-========================= */
-
-function generateNewsCanvas(){
-
-  if(!image){
-
-    alert("Please paste image first");
-
-    return;
-  }
-
-  const headline =
-    headlineInput.value.trim();
-
-  newsCtx.clearRect(
-    0,
-    0,
-    1080,
-    1350
-  );
-
-  /* =========================
-     MAIN IMAGE
-  ========================= */
-
-  const imageHeight = 945;
-
-  newsCtx.drawImage(
-    canvas,
-    0,
-    0,
-    1080,
-    imageHeight
-  );
-
-  /* =========================
-     BG BOTTOM AREA
-  ========================= */
-
-  if(backgroundImage.complete){
-
-    newsCtx.drawImage(
-      backgroundImage,
-      0,
-      945,
-      1080,
-      405
-    );
-  }
-
-  /* =========================
-     WHITE TEXT
-  ========================= */
-
-  drawWrappedText(
-    newsCtx,
-    headline,
-    540,
-    1030,
-    860,
-    62,
-    "#ffffff"
-  );
-
-  /* =========================
-     NEW LOGO METHOD
-  ========================= */
-
-  if(logoImage.complete){
-
-    newsCtx.save();
-
-    newsCtx.globalCompositeOperation =
-      "source-over";
-
-    newsCtx.drawImage(
-      logoImage,
-      1600,
-      50,
-      150,
-      150
-    );
-
-    newsCtx.restore();
-  }
-}
-
-/* =========================
-   WRAPPED TEXT
-========================= */
-
-function drawWrappedText(
-  ctx,
-  text,
-  centerX,
-  startY,
-  maxWidth,
-  fontSize,
-  color
-){
-
-  const words =
-    text.split(" ");
-
+logoImage.src = 'GVU.png';
+
+function drawWrappedText(ctx, text, centerX, startY, maxWidth, fontSize, color) {
+  const words = text.split(/\s+/);
+  let line = "";
   let lines = [];
 
-  let currentLine = "";
+  ctx.fillStyle = color;
+  ctx.font = `700 ${fontSize}px Montserrat`;
 
-  ctx.font =
-    `800 ${fontSize}px Montserrat`;
+  for (let word of words) {
+    let test = line ? line + " " + word : word;
 
-  for(let i=0; i<words.length; i++){
-
-    const testLine =
-      currentLine + words[i] + " ";
-
-    const width =
-      ctx.measureText(testLine).width;
-
-    if(width > maxWidth && i > 0){
-
-      lines.push(currentLine);
-
-      currentLine =
-        words[i] + " ";
-
-    }else{
-
-      currentLine =
-        testLine;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
     }
   }
 
-  lines.push(currentLine);
+  if (line) lines.push(line);
 
-  const lineHeight =
-    fontSize * 1.35;
-
-  ctx.fillStyle = color;
-
-  ctx.textBaseline = "top";
-
-  lines.forEach((line,index)=>{
-
-    ctx.font =
-      `800 ${fontSize}px Montserrat`;
-
-    const width =
-      ctx.measureText(line).width;
-
-    ctx.fillText(
-      line,
-      centerX - width / 2,
-      startY + index * lineHeight
-    );
-  });
+  for (let i = 0; i < lines.length; i++) {
+    let w = ctx.measureText(lines[i]).width;
+    ctx.fillText(lines[i], centerX - w / 2, startY + i * fontSize * 1.2);
+  }
 }
 
-/* =========================
-   DRAG IMAGE
-========================= */
+function generate() {
+  const text = headlineInput.value.trim();
+  const template = templateSelect.value;
 
-let isDragging = false;
+  if (!text) return;
 
-let startX;
-let startY;
+  newsCtx.clearRect(0, 0, 1080, 1350);
 
-canvas.addEventListener("mousedown",(e)=>{
+  // Background
+  newsCtx.drawImage(backgroundImage, 0, 0, 1080, 1350);
 
-  isDragging = true;
+  const img = new Image();
+  img.onload = function () {
 
-  startX = e.offsetX;
-  startY = e.offsetY;
-});
+    // Main image
+    newsCtx.drawImage(img, 25, 140, 1030, 720);
 
-canvas.addEventListener("mouseup",()=>{
+    let color = "#000";
+    let y = 900;
+    let size = 70;
 
-  isDragging = false;
-});
+    // TEMPLATE SYSTEM
+    if (template === "breaking") {
+      newsCtx.fillStyle = "red";
+      newsCtx.fillRect(0, 0, 1080, 120);
+      color = "#fff";
+      y = 880;
+    }
 
-canvas.addEventListener("mousemove",(e)=>{
+    if (template === "dark") {
+      newsCtx.fillStyle = "rgba(0,0,0,0.55)";
+      newsCtx.fillRect(0, 0, 1080, 1350);
+      color = "#fff";
+    }
 
-  if(!isDragging) return;
+    if (template === "minimal") {
+      size = 64;
+      y = 930;
+    }
 
-  const dx =
-    e.offsetX - startX;
+    drawWrappedText(newsCtx, text, 540, y, 900, size, color);
 
-  const dy =
-    e.offsetY - startY;
+    // Logo
+    newsCtx.drawImage(logoImage, 930, 40, 120, 120);
+  };
 
-  startX = e.offsetX;
-  startY = e.offsetY;
+  img.src = newsCanvas.toDataURL();
+}
 
-  offsetX += dx;
-  offsetY += dy;
+generateButton.onclick = generate;
 
-  drawImage();
-});
-
-/* =========================
-   ZOOM
-========================= */
-
-canvas.addEventListener("wheel",(e)=>{
-
-  e.preventDefault();
-
-  const zoomFactor = 1.1;
-
-  const mouseX = e.offsetX;
-  const mouseY = e.offsetY;
-
-  const direction =
-    e.deltaY > 0 ? -1 : 1;
-
-  let factor =
-    direction > 0
-      ? zoomFactor
-      : 1 / zoomFactor;
-
-  const newScale =
-    Math.max(
-      0.1,
-      Math.min(scale * factor,5)
-    );
-
-  factor =
-    newScale / scale;
-
-  offsetX -=
-    (mouseX - offsetX) * (factor - 1);
-
-  offsetY -=
-    (mouseY - offsetY) * (factor - 1);
-
-  scale = newScale;
-
-  drawImage();
-});
-
-/* =========================
-   BUTTON EVENTS
-========================= */
-
-generateButton.addEventListener(
-  "click",
-  generateNewsCanvas
-);
-
-stretchButton.addEventListener(
-  "click",
-  fitByStretch
-);
-
-fitLongestSideButton.addEventListener(
-  "click",
-  fitOnLongestSide
-);
-
-centerButton.addEventListener(
-  "click",
-  centerImage
-);
-
-/* =========================
-   DOWNLOAD
-========================= */
-
-downloadNewsButton.addEventListener(
-  "click",
-  ()=>{
-
-    const link =
-      document.createElement("a");
-
-    link.download =
-      "news-post.png";
-
-    link.href =
-      newsCanvas.toDataURL("image/png");
-
-    link.click();
-  }
-);
-
+downloadButton.onclick = function () {
+  const a = document.createElement('a');
+  a.download = "news.png";
+  a.href = newsCanvas.toDataURL();
+  a.click();
+};
 </script>
 
 </body>
