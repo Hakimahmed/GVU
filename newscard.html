@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Instagram News Graphic Generator</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  background:#f2f4f7;
+  font-family:'Montserrat',sans-serif;
+  padding:30px;
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+}
+
+h1{
+  text-align:center;
+  margin-bottom:25px;
+  color:#111;
+}
+
+/* =========================
+   IMAGE CROP AREA
+========================= */
+
+#canvasContainer{
+  width:1200px;
+  height:720px;
+  margin:auto;
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid #ddd;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+/* =========================
+   FINAL OUTPUT AREA
+========================= */
+
+#newsCanvasContainer{
+  width:1080px;
+  height:1350px;
+  margin:30px auto;
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid #ddd;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+canvas{
+  display:block;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.controls{
+  text-align:center;
+  margin-top:20px;
+}
+
+button{
+  padding:12px 22px;
+  margin:5px;
+  border:none;
+  border-radius:8px;
+  background:#111;
+  color:#fff;
+  font-size:16px;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#333;
+}
+
+/* =========================
+   HEADLINE INPUT
+========================= */
+
+#headlineInput{
+  width:80%;
+  display:block;
+  margin:25px auto;
+  padding:18px;
+  border-radius:10px;
+  border:1px solid #ccc;
+  font-size:34px;
+  font-family:'Montserrat',sans-serif;
+  font-weight:800;
+  text-align:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Instagram News Graphic Generator</h1>
+
+<!-- =========================
+     IMAGE CROP CANVAS
+========================= -->
+
+<div id="canvasContainer">
+  <canvas id="canvas" width="1200" height="720"></canvas>
+</div>
+
+<!-- =========================
+     CONTROLS
+========================= -->
+
+<div class="controls">
+
+  <button id="stretchButton">
+    Fit by Stretch
+  </button>
+
+  <button id="fitLongestSideButton">
+    Fit Longest Side
+  </button>
+
+  <button id="centerButton">
+    Center Image
+  </button>
+
+</div>
+
+<!-- =========================
+     HEADLINE INPUT
+========================= -->
+
+<input
+type="text"
+id="headlineInput"
+placeholder="Enter Headline"
+/>
+
+<!-- =========================
+     GENERATE BUTTON
+========================= -->
+
+<div class="controls">
+
+  <button id="generateButton">
+    Generate Graphic
+  </button>
+
+</div>
+
+<!-- =========================
+     FINAL OUTPUT CANVAS
+========================= -->
+
+<div id="newsCanvasContainer">
+  <canvas id="newsCanvas" width="1080" height="1350"></canvas>
+</div>
+
+<!-- =========================
+     DOWNLOAD BUTTON
+========================= -->
+
+<div class="controls">
+
+  <button id="downloadNewsButton">
+    Download Final Image
+  </button>
+
+</div>
+
+</div>
+
+<script>
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const canvas =
+  document.getElementById("canvas");
+
+const ctx =
+  canvas.getContext("2d");
+
+const newsCanvas =
+  document.getElementById("newsCanvas");
+
+const newsCtx =
+  newsCanvas.getContext("2d");
+
+const headlineInput =
+  document.getElementById("headlineInput");
+
+const generateButton =
+  document.getElementById("generateButton");
+
+const stretchButton =
+  document.getElementById("stretchButton");
+
+const fitLongestSideButton =
+  document.getElementById("fitLongestSideButton");
+
+const centerButton =
+  document.getElementById("centerButton");
+
+const downloadNewsButton =
+  document.getElementById("downloadNewsButton");
+
+/* =========================
+   BACKGROUND + LOGO
+========================= */
+
+const backgroundImage = new Image();
+backgroundImage.src = "BG.jpg";
+
+const logoImage = new Image();
+logoImage.src = "GVU.png";
+
+/* =========================
+   IMAGE VARIABLES
+========================= */
+
+let image = null;
+
+let offsetX = 0;
+let offsetY = 0;
+
+let scale = 1;
+
+/* =========================
+   PASTE IMAGE
+========================= */
+
+document.addEventListener("paste",(event)=>{
+
+  const items =
+    event.clipboardData.items;
+
+  for(let item of items){
+
+    if(item.type.indexOf("image") !== -1){
+
+      const blob =
+        item.getAsFile();
+
+      const reader =
+        new FileReader();
+
+      reader.onload = (e)=>{
+
+        loadImage(e.target.result);
+      };
+
+      reader.readAsDataURL(blob);
+    }
+  }
+});
+
+/* =========================
+   LOAD IMAGE
+========================= */
+
+function loadImage(src){
+
+  image = new Image();
+
+  image.onload = ()=>{
+
+    fitByStretch();
+  };
+
+  image.src = src;
+}
+
+/* =========================
+   FIT IMAGE
+========================= */
+
+function fitByStretch(){
+
+  if(!image) return;
+
+  offsetX = 0;
+  offsetY = 0;
+
+  const canvasRatio =
+    canvas.width / canvas.height;
+
+  const imageRatio =
+    image.width / image.height;
+
+  if(imageRatio > canvasRatio){
+
+    scale =
+      canvas.height / image.height;
+
+    offsetX =
+      (canvas.width - image.width * scale) / 2;
+
+  }else{
+
+    scale =
+      canvas.width / image.width;
+
+    offsetY =
+      (canvas.height - image.height * scale) / 2;
+  }
+
+  drawImage();
+}
+
+function fitOnLongestSide(){
+
+  if(!image) return;
+
+  if(image.width > image.height){
+
+    scale =
+      canvas.width / image.width;
+
+  }else{
+
+    scale =
+      canvas.height / image.height;
+  }
+
+  offsetX =
+    (canvas.width - image.width * scale) / 2;
+
+  offsetY =
+    (canvas.height - image.height * scale) / 2;
+
+  drawImage();
+}
+
+function centerImage(){
+
+  if(!image) return;
+
+  offsetX =
+    (canvas.width - image.width * scale) / 2;
+
+  offsetY =
+    (canvas.height - image.height * scale) / 2;
+
+  drawImage();
+}
+
+/* =========================
+   DRAW IMAGE
+========================= */
+
+function drawImage(){
+
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  if(image){
+
+    ctx.drawImage(
+      image,
+      offsetX,
+      offsetY,
+      image.width * scale,
+      image.height * scale
+    );
+  }
+}
+
+/* =========================
+   GENERATE FINAL OUTPUT
+========================= */
+
+function generateNewsCanvas(){
+
+  if(!image){
+
+    alert("Please paste image first");
+
+    return;
+  }
+
+  const headline =
+    headlineInput.value.trim();
+
+  /* CLEAR */
+
+  newsCtx.clearRect(
+    0,
+    0,
+    newsCanvas.width,
+    newsCanvas.height
+  );
+
+  /* BACKGROUND */
+
+  if(backgroundImage.complete){
+
+    newsCtx.drawImage(
+      backgroundImage,
+      0,
+      0,
+      1080,
+      1350
+    );
+
+  }else{
+
+    newsCtx.fillStyle = "#ffffff";
+
+    newsCtx.fillRect(
+      0,
+      0,
+      1080,
+      1350
+    );
+  }
+
+  /* =========================
+     70% IMAGE AREA
+  ========================= */
+
+  const imageHeight = 945;
+
+  newsCtx.drawImage(
+    canvas,
+    0,
+    0,
+    1080,
+    imageHeight
+  );
+
+  /* =========================
+     TEXT AREA
+  ========================= */
+
+  newsCtx.fillStyle = "#ffffff";
+
+  newsCtx.fillRect(
+    0,
+    imageHeight,
+    1080,
+    405
+  );
+
+  /* TOP BORDER */
+
+  newsCtx.fillStyle = "#111";
+
+  newsCtx.fillRect(
+    0,
+    imageHeight,
+    1080,
+    8
+  );
+
+  /* HEADLINE */
+
+  drawWrappedText(
+    newsCtx,
+    headline,
+    540,
+    1010,
+    860,
+    62,
+    "#111111"
+  );
+
+  /* LOGO */
+
+  if(logoImage.complete){
+
+    newsCtx.drawImage(
+      logoImage,
+      40,
+      980,
+      120,
+      120
+    );
+  }
+}
+
+/* =========================
+   WRAPPED TEXT
+========================= */
+
+function drawWrappedText(
+  ctx,
+  text,
+  centerX,
+  startY,
+  maxWidth,
+  fontSize,
+  color
+){
+
+  const words =
+    text.split(" ");
+
+  let lines = [];
+
+  let currentLine = "";
+
+  ctx.font =
+    `800 ${fontSize}px Montserrat`;
+
+  for(let i=0; i<words.length; i++){
+
+    const testLine =
+      currentLine + words[i] + " ";
+
+    const width =
+      ctx.measureText(testLine).width;
+
+    if(width > maxWidth && i > 0){
+
+      lines.push(currentLine);
+
+      currentLine =
+        words[i] + " ";
+
+    }else{
+
+      currentLine =
+        testLine;
+    }
+  }
+
+  lines.push(currentLine);
+
+  const lineHeight =
+    fontSize * 1.35;
+
+  ctx.fillStyle = color;
+
+  ctx.textBaseline = "top";
+
+  lines.forEach((line,index)=>{
+
+    ctx.font =
+      `800 ${fontSize}px Montserrat`;
+
+    const width =
+      ctx.measureText(line).width;
+
+    ctx.fillText(
+      line,
+      centerX - width / 2,
+      startY + index * lineHeight
+    );
+  });
+}
+
+/* =========================
+   DRAG IMAGE
+========================= */
+
+let isDragging = false;
+
+let startX;
+let startY;
+
+canvas.addEventListener("mousedown",(e)=>{
+
+  isDragging = true;
+
+  startX = e.offsetX;
+  startY = e.offsetY;
+});
+
+canvas.addEventListener("mouseup",()=>{
+
+  isDragging = false;
+});
+
+canvas.addEventListener("mousemove",(e)=>{
+
+  if(!isDragging) return;
+
+  const dx =
+    e.offsetX - startX;
+
+  const dy =
+    e.offsetY - startY;
+
+  startX = e.offsetX;
+  startY = e.offsetY;
+
+  offsetX += dx;
+  offsetY += dy;
+
+  drawImage();
+});
+
+/* =========================
+   ZOOM
+========================= */
+
+canvas.addEventListener("wheel",(e)=>{
+
+  e.preventDefault();
+
+  const zoomFactor = 1.1;
+
+  const mouseX = e.offsetX;
+  const mouseY = e.offsetY;
+
+  const direction =
+    e.deltaY > 0 ? -1 : 1;
+
+  let factor =
+    direction > 0
+      ? zoomFactor
+      : 1 / zoomFactor;
+
+  const newScale =
+    Math.max(
+      0.1,
+      Math.min(scale * factor,5)
+    );
+
+  factor =
+    newScale / scale;
+
+  offsetX -=
+    (mouseX - offsetX) * (factor - 1);
+
+  offsetY -=
+    (mouseY - offsetY) * (factor - 1);
+
+  scale = newScale;
+
+  drawImage();
+});
+
+/* =========================
+   BUTTON EVENTS
+========================= */
+
+generateButton.addEventListener(
+  "click",
+  generateNewsCanvas
+);
+
+stretchButton.addEventListener(
+  "click",
+  fitByStretch
+);
+
+fitLongestSideButton.addEventListener(
+  "click",
+  fitOnLongestSide
+);
+
+centerButton.addEventListener(
+  "click",
+  centerImage
+);
+
+/* =========================
+   DOWNLOAD
+========================= */
+
+downloadNewsButton.addEventListener(
+  "click",
+  ()=>{
+
+    const link =
+      document.createElement("a");
+
+    link.download =
+      "instagram-news-post.png";
+
+    link.href =
+      newsCanvas.toDataURL("image/png");
+
+    link.click();
+  }
+);
+
+</script>
+
+</body>
+</html>
