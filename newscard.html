@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,30 +17,42 @@
 }
 
 body{
-  background:#f2f4f7;
+  background:#f1f3f6;
   font-family:'Montserrat',sans-serif;
-  padding:30px;
+  padding:20px;
 }
 
+/* =========================
+   MAIN CONTAINER
+========================= */
+
 .container{
-  max-width:1200px;
+  width:100%;
+  max-width:1400px;
   margin:auto;
 }
 
 h1{
   text-align:center;
-  margin-bottom:25px;
+  margin-bottom:20px;
   color:#111;
+  font-size:28px;
 }
 
 /* =========================
-   IMAGE EDIT AREA
+   RESPONSIVE PREVIEW SIZE
 ========================= */
+
+.preview-wrapper{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  margin-bottom:25px;
+}
 
 #canvasContainer{
-  width:1200px;
-  height:720px;
-  margin:auto;
+  width:900px;
+  height:540px;
   background:#fff;
   border-radius:12px;
   overflow:hidden;
@@ -49,19 +60,26 @@ h1{
   box-shadow:0 5px 15px rgba(0,0,0,0.08);
 }
 
-/* =========================
-   FINAL OUTPUT
-========================= */
-
 #newsCanvasContainer{
-  width:1080px;
-  height:1350px;
-  margin:30px auto;
+  width:432px;
+  height:540px;
   background:#fff;
   border-radius:12px;
   overflow:hidden;
   border:1px solid #ddd;
   box-shadow:0 5px 15px rgba(0,0,0,0.08);
+}
+
+/* REAL CANVAS SIZE */
+
+#canvas{
+  width:900px;
+  height:540px;
+}
+
+#newsCanvas{
+  width:432px;
+  height:540px;
 }
 
 canvas{
@@ -69,7 +87,7 @@ canvas{
 }
 
 /* =========================
-   CONTROLS
+   BUTTONS
 ========================= */
 
 .controls{
@@ -84,7 +102,7 @@ button{
   border-radius:8px;
   background:#111;
   color:#fff;
-  font-size:16px;
+  font-size:15px;
   cursor:pointer;
 }
 
@@ -97,16 +115,40 @@ button:hover{
 ========================= */
 
 #headlineInput{
-  width:80%;
+  width:70%;
   display:block;
   margin:25px auto;
-  padding:18px;
+  padding:16px;
   border-radius:10px;
   border:1px solid #ccc;
-  font-size:34px;
+  font-size:28px;
   font-family:'Montserrat',sans-serif;
   font-weight:800;
   text-align:center;
+}
+
+@media(max-width:1000px){
+
+  #canvasContainer{
+    width:100%;
+    height:auto;
+  }
+
+  #canvas{
+    width:100%;
+    height:auto;
+  }
+
+  #newsCanvasContainer{
+    width:324px;
+    height:405px;
+  }
+
+  #newsCanvas{
+    width:324px;
+    height:405px;
+  }
+
 }
 
 </style>
@@ -120,8 +162,10 @@ button:hover{
 
 <!-- IMAGE EDIT AREA -->
 
-<div id="canvasContainer">
-  <canvas id="canvas" width="1200" height="720"></canvas>
+<div class="preview-wrapper">
+  <div id="canvasContainer">
+    <canvas id="canvas" width="1200" height="720"></canvas>
+  </div>
 </div>
 
 <!-- CONTROLS -->
@@ -162,8 +206,10 @@ placeholder="Enter Headline"
 
 <!-- OUTPUT -->
 
-<div id="newsCanvasContainer">
-  <canvas id="newsCanvas" width="1080" height="1350"></canvas>
+<div class="preview-wrapper">
+  <div id="newsCanvasContainer">
+    <canvas id="newsCanvas" width="1080" height="1350"></canvas>
+  </div>
 </div>
 
 <!-- DOWNLOAD -->
@@ -395,8 +441,6 @@ function generateNewsCanvas(){
   const headline =
     headlineInput.value.trim();
 
-  /* CLEAR */
-
   newsCtx.clearRect(
     0,
     0,
@@ -405,7 +449,7 @@ function generateNewsCanvas(){
   );
 
   /* =========================
-     MAIN IMAGE AREA
+     MAIN IMAGE
   ========================= */
 
   const imageHeight = 945;
@@ -419,7 +463,7 @@ function generateNewsCanvas(){
   );
 
   /* =========================
-     BG AREA (BOTTOM 30%)
+     BG BOTTOM AREA
   ========================= */
 
   if(backgroundImage.complete){
@@ -442,16 +486,21 @@ function generateNewsCanvas(){
     headline,
     540,
     1030,
-    900,
+    860,
     62,
     "#ffffff"
   );
 
   /* =========================
-     LOGO TOP RIGHT
+     NEW LOGO METHOD
   ========================= */
 
   if(logoImage.complete){
+
+    newsCtx.save();
+
+    newsCtx.globalCompositeOperation =
+      "source-over";
 
     newsCtx.drawImage(
       logoImage,
@@ -460,6 +509,8 @@ function generateNewsCanvas(){
       150,
       150
     );
+
+    newsCtx.restore();
   }
 }
 
@@ -665,4 +716,3 @@ downloadNewsButton.addEventListener(
 
 </body>
 </html>
-```
