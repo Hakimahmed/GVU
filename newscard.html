@@ -34,7 +34,7 @@ h1{
 }
 
 /* =========================
-   IMAGE CROP AREA
+   IMAGE EDIT AREA
 ========================= */
 
 #canvasContainer{
@@ -68,7 +68,7 @@ canvas{
 }
 
 /* =========================
-   BUTTONS
+   CONTROLS
 ========================= */
 
 .controls{
@@ -146,7 +146,7 @@ button:hover{
 <input
 type="text"
 id="headlineInput"
-placeholder="Enter News Headline"
+placeholder="Enter Headline"
 />
 
 <!-- GENERATE -->
@@ -159,7 +159,7 @@ placeholder="Enter News Headline"
 
 </div>
 
-<!-- FINAL OUTPUT -->
+<!-- OUTPUT -->
 
 <div id="newsCanvasContainer">
   <canvas id="newsCanvas" width="1080" height="1350"></canvas>
@@ -379,7 +379,7 @@ function drawImage(){
 }
 
 /* =========================
-   GENERATE FINAL OUTPUT
+   GENERATE OUTPUT
 ========================= */
 
 function generateNewsCanvas(){
@@ -394,12 +394,29 @@ function generateNewsCanvas(){
   const headline =
     headlineInput.value.trim();
 
+  /* CLEAR */
+
   newsCtx.clearRect(
     0,
     0,
     1080,
     1350
   );
+
+  /* =========================
+     FULL BACKGROUND
+  ========================= */
+
+  if(backgroundImage.complete){
+
+    newsCtx.drawImage(
+      backgroundImage,
+      0,
+      0,
+      1080,
+      1350
+    );
+  }
 
   /* =========================
      IMAGE AREA
@@ -416,19 +433,6 @@ function generateNewsCanvas(){
   );
 
   /* =========================
-     BLACK BOTTOM AREA
-  ========================= */
-
-  newsCtx.fillStyle = "#000";
-
-  newsCtx.fillRect(
-    0,
-    imageHeight,
-    1080,
-    405
-  );
-
-  /* =========================
      TEXT
   ========================= */
 
@@ -436,9 +440,9 @@ function generateNewsCanvas(){
     newsCtx,
     headline,
     540,
-    1020,
+    1030,
     900,
-    64,
+    62,
     "#ffffff"
   );
 
@@ -450,40 +454,12 @@ function generateNewsCanvas(){
 
     newsCtx.drawImage(
       logoImage,
-      500,
+      880,
       50,
       150,
       150
     );
   }
-}
-
-  /* =========================
-     30% BLACK AREA
-  ========================= */
-
-  newsCtx.fillStyle = "#000000";
-
-  newsCtx.fillRect(
-    0,
-    imageHeight,
-    1080,
-    405
-  );
-
-  /* =========================
-     TEXT
-  ========================= */
-
-  drawWrappedText(
-    newsCtx,
-    headline,
-    540,
-    1020,
-    900,
-    64,
-    "#ffffff"
-  );
 }
 
 /* =========================
