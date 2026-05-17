@@ -394,8 +394,6 @@ function generateNewsCanvas(){
   const headline =
     headlineInput.value.trim();
 
-  /* CLEAR */
-
   newsCtx.clearRect(
     0,
     0,
@@ -404,7 +402,7 @@ function generateNewsCanvas(){
   );
 
   /* =========================
-     70% IMAGE AREA
+     IMAGE AREA
   ========================= */
 
   const imageHeight = 945;
@@ -415,6 +413,33 @@ function generateNewsCanvas(){
     0,
     1080,
     imageHeight
+  );
+
+  /* =========================
+     BLACK BOTTOM AREA
+  ========================= */
+
+  newsCtx.fillStyle = "#000";
+
+  newsCtx.fillRect(
+    0,
+    imageHeight,
+    1080,
+    405
+  );
+
+  /* =========================
+     TEXT
+  ========================= */
+
+  drawWrappedText(
+    newsCtx,
+    headline,
+    540,
+    1020,
+    900,
+    64,
+    "#ffffff"
   );
 
   /* =========================
@@ -431,6 +456,7 @@ function generateNewsCanvas(){
       150
     );
   }
+}
 
   /* =========================
      30% BLACK AREA
