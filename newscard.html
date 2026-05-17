@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Instagram News Graphic Generator</title>
+<title>News Graphic Generator</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
 
@@ -49,7 +49,7 @@ h1{
 }
 
 /* =========================
-   FINAL OUTPUT AREA
+   FINAL OUTPUT
 ========================= */
 
 #newsCanvasContainer{
@@ -92,7 +92,7 @@ button:hover{
 }
 
 /* =========================
-   HEADLINE INPUT
+   INPUT
 ========================= */
 
 #headlineInput{
@@ -115,19 +115,15 @@ button:hover{
 
 <div class="container">
 
-<h1>Instagram News Graphic Generator</h1>
+<h1>News Graphic Generator</h1>
 
-<!-- =========================
-     IMAGE CROP CANVAS
-========================= -->
+<!-- IMAGE CROP AREA -->
 
 <div id="canvasContainer">
   <canvas id="canvas" width="1200" height="720"></canvas>
 </div>
 
-<!-- =========================
-     CONTROLS
-========================= -->
+<!-- CONTROLS -->
 
 <div class="controls">
 
@@ -145,19 +141,15 @@ button:hover{
 
 </div>
 
-<!-- =========================
-     HEADLINE INPUT
-========================= -->
+<!-- HEADLINE -->
 
 <input
 type="text"
 id="headlineInput"
-placeholder="Enter Headline"
+placeholder="Enter News Headline"
 />
 
-<!-- =========================
-     GENERATE BUTTON
-========================= -->
+<!-- GENERATE -->
 
 <div class="controls">
 
@@ -167,17 +159,13 @@ placeholder="Enter Headline"
 
 </div>
 
-<!-- =========================
-     FINAL OUTPUT CANVAS
-========================= -->
+<!-- FINAL OUTPUT -->
 
 <div id="newsCanvasContainer">
   <canvas id="newsCanvas" width="1080" height="1350"></canvas>
 </div>
 
-<!-- =========================
-     DOWNLOAD BUTTON
-========================= -->
+<!-- DOWNLOAD -->
 
 <div class="controls">
 
@@ -411,33 +399,9 @@ function generateNewsCanvas(){
   newsCtx.clearRect(
     0,
     0,
-    newsCanvas.width,
-    newsCanvas.height
+    1080,
+    1350
   );
-
-  /* BACKGROUND */
-
-  if(backgroundImage.complete){
-
-    newsCtx.drawImage(
-      backgroundImage,
-      0,
-      0,
-      1080,
-      1350
-    );
-
-  }else{
-
-    newsCtx.fillStyle = "#ffffff";
-
-    newsCtx.fillRect(
-      0,
-      0,
-      1080,
-      1350
-    );
-  }
 
   /* =========================
      70% IMAGE AREA
@@ -454,10 +418,25 @@ function generateNewsCanvas(){
   );
 
   /* =========================
-     TEXT AREA
+     LOGO TOP RIGHT
   ========================= */
 
-  newsCtx.fillStyle = "#ffffff";
+  if(logoImage.complete){
+
+    newsCtx.drawImage(
+      logoImage,
+      880,
+      50,
+      150,
+      150
+    );
+  }
+
+  /* =========================
+     30% BLACK AREA
+  ========================= */
+
+  newsCtx.fillStyle = "#000000";
 
   newsCtx.fillRect(
     0,
@@ -466,41 +445,19 @@ function generateNewsCanvas(){
     405
   );
 
-  /* TOP BORDER */
-
-  newsCtx.fillStyle = "#111";
-
-  newsCtx.fillRect(
-    0,
-    imageHeight,
-    1080,
-    8
-  );
-
-  /* HEADLINE */
+  /* =========================
+     TEXT
+  ========================= */
 
   drawWrappedText(
     newsCtx,
     headline,
     540,
-    1010,
-    860,
-    62,
-    "#111111"
+    1020,
+    900,
+    64,
+    "#ffffff"
   );
-
-  /* LOGO */
-
-  if(logoImage.complete){
-
-    newsCtx.drawImage(
-      logoImage,
-      40,
-      980,
-      120,
-      120
-    );
-  }
 }
 
 /* =========================
@@ -692,7 +649,7 @@ downloadNewsButton.addEventListener(
       document.createElement("a");
 
     link.download =
-      "instagram-news-post.png";
+      "news-post.png";
 
     link.href =
       newsCanvas.toDataURL("image/png");
