@@ -1,155 +1,286 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>News Generator</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>GVU News Generator</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
 
 <style>
-  body {
-    font-family: Arial;
-    background: #f4f6f8;
-    text-align: center;
-    padding: 20px;
-  }
 
-  h1 {
-    color: #006163;
-  }
+body{
+  font-family: Arial;
+  background:#f4f6f8;
+  text-align:center;
+  padding:20px;
+}
 
-  #headlineInput {
-    width: 80%;
-    padding: 10px;
-    font-size: 18px;
-    font-family: Montserrat;
-    font-weight: 700;
-    margin: 10px 0;
-  }
+h1{
+  color:#006163;
+}
 
-  button {
-    padding: 10px 15px;
-    margin: 5px;
-    font-size: 16px;
-    cursor: pointer;
-  }
+#headlineInput{
+  width:80%;
+  padding:12px;
+  font-size:20px;
+  font-family:Montserrat;
+  font-weight:700;
+  margin:10px 0;
+}
 
-  #canvasContainer {
-    width: 1080px;
-    height: 1350px;
-    margin: auto;
-    background: #fff;
-    border: 1px solid #ccc;
-  }
+input[type="file"]{
+  margin:15px 0;
+}
 
-  canvas {
-    display: block;
-  }
+button{
+  padding:12px 18px;
+  margin:5px;
+  font-size:16px;
+  cursor:pointer;
+  border:none;
+  background:#006163;
+  color:white;
+  border-radius:5px;
+}
+
+button:hover{
+  opacity:0.9;
+}
+
+#canvasContainer{
+  width:1080px;
+  height:1350px;
+  margin:auto;
+  background:#fff;
+  border:1px solid #ccc;
+}
+
+canvas{
+  display:block;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>News Generator</h1>
+<h1>GVU News Generator</h1>
 
-<input id="headlineInput" placeholder="Enter headline (English only)" />
+<input type="file" id="imageInput" accept="image/*">
+<br>
+
+<input 
+id="headlineInput" 
+placeholder="Enter headline..." 
+/>
+
 <br>
 
 <button id="generateBtn">Generate</button>
 <button id="downloadBtn">Download</button>
+
+<br><br>
 
 <div id="canvasContainer">
   <canvas id="canvas" width="1080" height="1350"></canvas>
 </div>
 
 <script>
+
 const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d", {
+  alpha:false
+});
+
+ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingQuality = "high";
 
 const headlineInput = document.getElementById("headlineInput");
+const imageInput = document.getElementById("imageInput");
 
+// ================= IMAGES =================
+
+// Background
 const bg = new Image();
 bg.src = "BG.png";
 
+// Logo
 const logo = new Image();
 logo.src = "GVU.png";
 
-// ================= TEXT =================
-function drawText(text, x, y, maxWidth, size) {
+// Uploaded image
+let uploadedImage = null;
+
+// ================= LOAD USER IMAGE =================
+
+imageInput.addEventListener("change", function(e){
+
+  const file = e.target.files[0];
+
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(event){
+
+    uploadedImage = new Image();
+
+    uploadedImage.onload = function(){
+      console.log("Image Loaded");
+    };
+
+    uploadedImage.src = event.target.result;
+  };
+
+  reader.readAsDataURL(file);
+
+});
+
+// ================= TEXT FUNCTION =================
+
+function drawText(text, x, y, maxWidth, fontSize){
+
   const words = text.split(" ");
-  let line = [];
+
   let lines = [];
+  let currentLine = "";
 
-  ctx.font = `700 ${size}px Montserrat`;
+  ctx.font = `700 ${fontSize}px Montserrat`;
   ctx.fillStyle = "#000";
+  ctx.textBaseline = "top";
 
-  for (let word of words) {
-    let test = line.join(" ") + (line.length ? " " : "") + word;
+  for(let i = 0; i < words.length; i++){
 
-    if (ctx.measureText(test).width > maxWidth && line.length) {
-      lines.push(line.join(" "));
-      line = [word];
-    } else {
-      line.push(word);
+    let testLine = currentLine + words[i] + " ";
+
+    let metrics = ctx.measureText(testLine);
+
+    if(metrics.width > maxWidth && i > 0){
+
+      lines.push(currentLine);
+
+      currentLine = words[i] + " ";
+
+    }else{
+
+      currentLine = testLine;
+
     }
   }
 
-  if (line.length) lines.push(line.join(" "));
+  lines.push(currentLine);
 
-  for (let i = 0; i < lines.length; i++) {
-    let w = ctx.measureText(lines[i]).width;
-    ctx.fillText(lines[i], x - w / 2, y + i * size * 1.2);
+  for(let i = 0; i < lines.length; i++){
+
+    const lineWidth = ctx.measureText(lines[i]).width;
+
+    ctx.fillText(
+      lines[i],
+      x - lineWidth / 2,
+      y + (i * fontSize * 1.2)
+    );
   }
 }
 
 // ================= GENERATE =================
-function generate() {
-  const text = headlineInput.value.trim();
-  if (!text) return;
 
-  ctx.clearRect(0, 0, 1080, 1350);
+function generate(){
 
-  // background
-  ctx.drawImage(bg, 0, 0, 1080, 1350);
+  const headline = headlineInput.value.trim();
 
-  const img = new Image();
+  if(!headline){
+    alert("Enter headline");
+    return;
+  }
 
-  img.onload = function () {
+  if(!uploadedImage){
+    alert("Upload image");
+    return;
+  }
 
-    // NO STRETCH FIT IMAGE
-    const maxW = 1030;
-    const maxH = 750;
+  // CLEAR
+  ctx.clearRect(0,0,1080,1350);
 
-    let ratio = Math.min(maxW / img.width, maxH / img.height);
+  // DRAW BACKGROUND
+  ctx.drawImage(bg,0,0,1080,1350);
 
-    let w = img.width * ratio;
-    let h = img.height * ratio;
+  // ================= IMAGE FIT =================
 
-    let x = (1080 - w) / 2;
-    let y = 140 + (maxH - h) / 2;
+  const maxWidth = 1030;
+  const maxHeight = 750;
 
-    ctx.drawImage(img, x, y, w, h);
+  const ratio = Math.min(
+    maxWidth / uploadedImage.width,
+    maxHeight / uploadedImage.height
+  );
 
-    // headline
-    drawText(text, 540, 950, 900, 70);
+  const drawWidth = uploadedImage.width * ratio;
+  const drawHeight = uploadedImage.height * ratio;
 
-   // logo on top-left of image
-ctx.drawImage(logo, x + 20, y + 20, 120, 120);
-  };
+  const imgX = (1080 - drawWidth) / 2;
+  const imgY = 140 + ((maxHeight - drawHeight) / 2);
 
-  img.src = canvas.toDataURL();
+  // DRAW MAIN IMAGE
+  ctx.drawImage(
+    uploadedImage,
+    imgX,
+    imgY,
+    drawWidth,
+    drawHeight
+  );
+
+  // ================= LOGO BOX =================
+
+  ctx.fillStyle = "rgba(0,0,0,0.35)";
+
+  ctx.fillRect(
+    imgX + 15,
+    imgY + 15,
+    140,
+    140
+  );
+
+  // ================= LOGO =================
+
+  ctx.drawImage(
+    logo,
+    imgX + 25,
+    imgY + 25,
+    120,
+    120
+  );
+
+  // ================= HEADLINE =================
+
+  drawText(
+    headline,
+    540,
+    980,
+    900,
+    70
+  );
+
 }
 
-// ================= EVENTS =================
+// ================= BUTTONS =================
+
 document.getElementById("generateBtn").onclick = generate;
 
-document.getElementById("downloadBtn").onclick = function () {
-  const a = document.createElement("a");
-  a.download = "news.png";
-  a.href = canvas.toDataURL();
-  a.click();
+// DOWNLOAD
+document.getElementById("downloadBtn").onclick = function(){
+
+  const link = document.createElement("a");
+
+  link.download = "GVU-News.png";
+
+  link.href = canvas.toDataURL("image/png");
+
+  link.click();
+
 };
+
 </script>
 
 </body>
