@@ -134,8 +134,8 @@ function generate() {
     // headline
     drawText(text, 540, 950, 900, 70);
 
-    // logo (safe top-right)
-    ctx.drawImage(logo, 1080 - 150, 30, 110, 110);
+   // logo on top-left of image
+ctx.drawImage(logo, x + 20, y + 20, 120, 120);
   };
 
   img.src = canvas.toDataURL();
